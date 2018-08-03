@@ -289,14 +289,16 @@ class GateDocument(GateInterFace):
         jsonDict['document'] = 'getDocumentContent'
         jsonDict['docName'] = self.documentName
         response = self._send2Java(jsonDict)
-        return response
+        docContent = response['docContent']
+        return docContent
 
     def getAnnotationSetNames(self):
         jsonDict = {}
         jsonDict['document'] = 'getAnnotationSetName'
         jsonDict['docName'] = self.documentName
         response = self._send2Java(jsonDict)
-        return response
+        astName = response['annotationSetName']
+        return astName
 
     def getAnnotations(self, annotationSetName):
         jsonDict = {}
@@ -305,7 +307,7 @@ class GateDocument(GateInterFace):
         jsonDict['annotationSetName'] = annotationSetName
         currentAnnotationSet = AnnotationSet()
         response = self._send2Java(jsonDict)
-        print(response)
+        #print(response)
         currentAnnotationSet._getAnnotationFromResponse(response)
         return currentAnnotationSet
 
@@ -389,45 +391,45 @@ class GateCorpus(GateInterFace):
 
 
 
-if __name__ == "__main__":
-    gate= GateInterFace()
-    gate.init('/Users/xingyi/Gate/gateCodes/pythonInferface')
-    #gate.test()
-    document = GateDocument()
-    document.loadDocumentFromURL("https://gate.ac.uk")
-    #document.loadDocumentFromFile("/Users/xingyi/Gate/gateCodes/pythonInferface/ft-airlines-27-jul-2001.xml")
-    #print(document.documentName)
-    #content = document.getDocumentContent()
-    #print(content)
-    #atsName = document.getAnnotationSetNames()
-    #print(atsName)
-    #ats = document.getAnnotations('')
-    #print(len(ats.annotationSet))
-    #print(ats.annotationSet[0])
-    response=gate.loadMvnPlugins("uk.ac.gate.plugins", "annie", "8.5")
-    print(response)
-    prparameter={}
-    response=gate.loadPRs('gate.creole.annotdelete.AnnotationDeletePR')
-    response=gate.loadPRs('gate.creole.tokeniser.DefaultTokeniser')
-    prparameter['grammarURL'] = 'file:////Users/xingyi//Gate/ifpri/JAPE/main.jape'
-    response=gate.loadPRs('gate.creole.Transducer', prparameter)
-    print(response)
-    print(gate.loadedPrs)
-    testPipeLine = GatePipeline('testpipeline')
-    testPipeLine.createPipeline()
-    testPipeLine.addPR('gate.creole.annotdelete.AnnotationDeletePR')
-    testPipeLine.addPR('gate.creole.tokeniser.DefaultTokeniser')
-    testCorpus = GateCorpus('testCorpus')
-    testCorpus.addDocument(document)
-    testPipeLine.setCorpus(testCorpus)
-    testPipeLine.runPipeline()
-    #ats = document.getAnnotations('Original markups')
-    ats = document.getAnnotations('')
-    print(len(ats.annotationSet))
-    print(ats.annotationSet[0])
-    testPipeline2 = GatePipeline('testpipeline2')
-    testPipeLine.loadPipelineFromFile('/Users/xingyi/Gate/ifpri/ifpri.xgapp')
-    gate.close()
-
+#if __name__ == "__main__":
+#    gate= GateInterFace()
+#    gate.init('/Users/xingyi/Gate/gateCodes/pythonInferface')
+#    #gate.test()
+#    document = GateDocument()
+#    document.loadDocumentFromURL("https://gate.ac.uk")
+#    #document.loadDocumentFromFile("/Users/xingyi/Gate/gateCodes/pythonInferface/ft-airlines-27-jul-2001.xml")
+#    #print(document.documentName)
+#    #content = document.getDocumentContent()
+#    #print(content)
+#    #atsName = document.getAnnotationSetNames()
+#    #print(atsName)
+#    #ats = document.getAnnotations('')
+#    #print(len(ats.annotationSet))
+#    #print(ats.annotationSet[0])
+#    response=gate.loadMvnPlugins("uk.ac.gate.plugins", "annie", "8.5")
+#    print(response)
+#    prparameter={}
+#    response=gate.loadPRs('gate.creole.annotdelete.AnnotationDeletePR')
+#    response=gate.loadPRs('gate.creole.tokeniser.DefaultTokeniser')
+#    prparameter['grammarURL'] = 'file:////Users/xingyi//Gate/ifpri/JAPE/main.jape'
+#    response=gate.loadPRs('gate.creole.Transducer', prparameter)
+#    print(response)
+#    print(gate.loadedPrs)
+#    testPipeLine = GatePipeline('testpipeline')
+#    testPipeLine.createPipeline()
+#    testPipeLine.addPR('gate.creole.annotdelete.AnnotationDeletePR')
+#    testPipeLine.addPR('gate.creole.tokeniser.DefaultTokeniser')
+#    testCorpus = GateCorpus('testCorpus')
+#    testCorpus.addDocument(document)
+#    testPipeLine.setCorpus(testCorpus)
+#    testPipeLine.runPipeline()
+#    #ats = document.getAnnotations('Original markups')
+#    ats = document.getAnnotations('')
+#    print(len(ats.annotationSet))
+#    print(ats.annotationSet[0])
+#    testPipeline2 = GatePipeline('testpipeline2')
+#    testPipeLine.loadPipelineFromFile('/Users/xingyi/Gate/ifpri/ifpri.xgapp')
+#    gate.close()
+#
 
 

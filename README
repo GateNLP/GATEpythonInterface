@@ -1,7 +1,13 @@
 REQUIREMENT
-Python2.7
-GATE8.5
+Python
+Java
+Maven
+
 
 INSTALL
+mvn compile
+
+Useage:
+Please check example.py
 
 
