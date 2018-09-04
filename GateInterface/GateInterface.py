@@ -27,16 +27,53 @@ class GateInterFace:
         self.loadedPlugins = []
         self.loadedPrs = []
         self.pro = None
+        self.logFile = "gpiterface"+str(self.PORT)+".log"
+        self.interfaceJavaPath = None
 
     def init(self, interfaceJavaPath):
+        self.interfaceJavaPath = interfaceJavaPath
+        cwd = os.getcwd()
         runScript = os.path.join(interfaceJavaPath,'run.sh')
         os.chdir(interfaceJavaPath)
+        
+
+        if (os.path.isfile(self.logFile)):
+            print("logfile existed, try to close previous session")
+            try:
+                with open(self.logFile,'r') as fin:
+                    line = fin.readline().strip()
+                    pid = int(line)
+                    os.killpg(os.getpgid(pid), signal.SIGTERM)
+            except:
+                print("can not kill process-"+str(pid)+"please close manully")
+            
+            
         print(runScript)
-        self.pro = subprocess.Popen(["bash", runScript])
+        #self.pro = subprocess.Popen(["bash", runScript])
+        hostportArg = "-Dexec.args=\""+str(self.PORT)+"\""
+        args=["mvn", "exec:java", "-Dexec.mainClass=uk.ac.gate.python.pythonInferface.GateServer",hostportArg]
+        #self.pro = subprocess.Popen(["mvn", "exec:java -Dexec.mainClass=uk.ac.gate.python.pythonInferface.GateServer -Dexec.args="7899""])
+        self.pro = subprocess.Popen(args)
+        with open(self.logFile,'w') as fo:
+            fo.write(str(self.pro.pid))
+        os.chdir(cwd)
         time.sleep(5)
 
     def close(self):
+
+
+        print(self.pro.pid)
+        logFile = os.path.join(self.interfaceJavaPath, self.logFile)
+        print(logFile)
+        os.remove(logFile)
         os.killpg(os.getpgid(self.pro.pid), signal.SIGTERM)
+        #try:
+        #    os.killpg(os.getpgid(self.pro.pid), signal.SIGTERM)
+        #    logFile = os.path.join(self.interfaceJavaPath, self.logFile)
+        #    print(logFile)
+        #    os.remove(logFile)
+        #except:
+        #    print("logfile not correctly removed")
 
 
     def test(self):
