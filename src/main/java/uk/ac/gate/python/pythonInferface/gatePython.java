@@ -45,7 +45,7 @@ public class gatePython {
 			}
 			else{
 				Document gateDoc = document.loadDocument(currentDocumentName);
-				System.out.println(gateDoc.getAnnotationSetNames());
+				//System.out.println(gateDoc.getAnnotationSetNames());
 				gateDocList.put(currentDocumentName, gateDoc);
 				//returnResponse ="success";
 				returnResponse.put("message", "success");
@@ -60,7 +60,7 @@ public class gatePython {
 			}
 			else{
 				Document gateDoc = document.loadDocumentFromFile(currentDocumentName);
-				System.out.println(gateDoc.getAnnotationSetNames());
+				//System.out.println(gateDoc.getAnnotationSetNames());
 				gateDocList.put(currentDocumentName, gateDoc);
 				//returnResponse ="success";
 				returnResponse.put("message", "success");
@@ -87,7 +87,7 @@ public class gatePython {
 		//////////////load prs///////////////////////////
 		if (fullRequest.containsKey("loadPR")){
 			ProcessingResource currentPR;
-			String prName = fullRequest.get("resourcePath");
+			String prName = fullRequest.get("name");
 			String resourcePath = fullRequest.get("resourcePath");
 			if (fullRequest.get("loadPR").equals("withFeature")){
 				Boolean finishFeatureLoading = false;
@@ -111,12 +111,24 @@ public class gatePython {
 			else{
 				currentPR=(ProcessingResource) Factory.createResource(resourcePath);
 			}
+			
 			gatePrs.put(prName, currentPR);
-			System.out.println("finish loading pr");
+			//System.out.println("finish loading pr");
 			returnResponse.put("PRLoaded", prName);
 			returnResponse.put("message", "success");
-			System.out.println(returnResponse);
+			//System.out.println(returnResponse);
 		}
+		
+		if (fullRequest.containsKey("reInitPR")){
+			ProcessingResource currentPR;
+			String prName = fullRequest.get("name");
+			currentPR = gatePrs.get(prName);
+			currentPR.reInit();
+			returnResponse.put("PRReinit", prName);
+			returnResponse.put("message", "success");
+			//System.out.println(returnResponse);
+		}
+		
 		
 		///////////////////pipelines/////////////////////////////////////////
 		if (fullRequest.containsKey("pipeline")){
@@ -124,7 +136,7 @@ public class gatePython {
 				String pipelineName = fullRequest.get("pipelineName");
 				ConditionalSerialAnalyserController currentController = (ConditionalSerialAnalyserController) Factory.createResource("gate.creole.ConditionalSerialAnalyserController");
 				gatePipelines.put(pipelineName, currentController);
-				System.out.println("finish creating pipeline");
+				//System.out.println("finish creating pipeline");
 				returnResponse.put("pipelineCreated", pipelineName);
 				returnResponse.put("message", "success");
 			}
@@ -134,7 +146,7 @@ public class gatePython {
 				String filePath = fullRequest.get("filtPath");
 				ConditionalSerialAnalyserController currentController = (ConditionalSerialAnalyserController) PersistenceManager.loadObjectFromFile(new File(filePath));;
 				gatePipelines.put(pipelineName, currentController);
-				System.out.println("finish loading pipeline");
+				//System.out.println("finish loading pipeline");
 				returnResponse.put("pipelineLoaded", pipelineName);
 				returnResponse.put("message", "success");
 			}
@@ -202,7 +214,7 @@ public class gatePython {
 		
 		/////////////////////////////////////////////////////////////////////
 		
-		System.out.println(returnResponse);
+		//System.out.println(returnResponse);
 		return returnResponse;
 		
 	}

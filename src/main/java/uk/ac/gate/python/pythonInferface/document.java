@@ -4,10 +4,12 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 import gate.Gate;
 import gate.Factory;
+import gate.Annotation;
 import gate.AnnotationSet;
 import gate.Document;
 import gate.util.GateException;
@@ -44,7 +46,8 @@ public class document {
 		if (operation.equals("getAnnotations")){
 			String docName = fullRequest.get("docName");
 			String annotationSetName = fullRequest.get("annotationSetName");
-			AnnotationSet ats = gateDocList.get(docName).getAnnotations(annotationSetName);
+			List<Annotation> ats = gateDocList.get(docName).getAnnotations(annotationSetName).inDocumentOrder();
+			//ats = ats.inDocumentOrder();
 			returnResponse.put("annotationSet", ats.toString());								
 		}
 		

@@ -105,9 +105,9 @@ class GateInterFace:
     def _send2Java(self, jsonDict):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((self.HOST, self.PORT))
-        print(jsonDict)
+        #print(jsonDict)
         for jsonKey in jsonDict:
-            print(jsonKey)
+            #print(jsonKey)
             jsonValue = jsonDict[jsonKey]
             valueLen = len(jsonValue)
             previ = 0
@@ -122,9 +122,9 @@ class GateInterFace:
                 jsonSend = {'fromClient':{jsonKey:subValue, 'eov':False}}
                 previ = i
                 i += self.maxSendChar
-                print(jsonSend)
+                #print(jsonSend)
                 sock.sendall((json.dumps(jsonSend, cls=MyEncoder)+"\n").encode('utf-8'))
-        print('finish')
+        #print('finish')
         jsonSend = {'fromClient':{'eov':True}}
         sock.sendall((json.dumps(jsonSend, cls=MyEncoder)+"\n").encode('utf-8'))
         serverReturn = self._recvDocFromJava(sock)
@@ -166,7 +166,7 @@ class GateInterFace:
         return response
 
 
-    def loadPRs(self, resourcePath, features=None):
+    def loadPRs(self, resourcePath, name, features=None):
         jsonDict = {}
         if features == None:
             jsonDict['loadPR'] = 'withoutFeature'
@@ -181,10 +181,21 @@ class GateInterFace:
                 i+=1
 
         jsonDict['resourcePath'] = resourcePath
+        jsonDict['name'] = name
         response = self._send2Java(jsonDict)
         if response['message'] == 'success':
             self.loadedPrs.append(response['PRLoaded'])
         return response
+
+    def reinitPRs(self, name):
+        jsonDict = {}
+        jsonDict['reInitPR'] = 'none'
+        jsonDict['name'] = name
+        response = self._send2Java(jsonDict)
+        if response['message'] != 'success':
+            print('error unable to reinit pr', name)
+        return response['message']
+
 
 
 
@@ -193,11 +204,29 @@ class AnnotationSet(GateInterFace):
         GateInterFace.__init__(self)
         self.annotationSet = []
 
+    def __len__(self):
+        return len(self.annotationSet)
+
+    def __iter__(self):
+        for node in self.annotationSet:
+            yield node
+
+    def getType(self, annotationType):
+        newList = []
+        for annotation in self.annotationSet:
+            if annotation.type == annotationType:
+                newList.append(annotation)
+        subSet = AnnotationSet()
+        subSet.annotationSet = newList
+        return subSet
+            
+
     def _getAnnotationFromResponse(self,response):
         annotationResponse = response['annotationSet']
         annotationList = annotationResponse.split('\n, Anno')
-        print(len(annotationList))
-        print(annotationList[0])
+        #print('getting annotation from response')
+        #print(len(annotationList))
+        #print(annotationList[0])
         idPattern = '(?<=tationImpl\: id\=)\d*(?=\; type\=.*\;)'
         typePattern = '(?<=; type\=).*(?=\; features\=)'
         featurePattern = '(?<=; features\=\{)[\S\s]*(?=\}\; start\=.*\;)'
@@ -208,7 +237,7 @@ class AnnotationSet(GateInterFace):
         fullPattern = 'AnnotationImpl\: id\=\d*\; type\=.*\; features\=\{.*\}\; start\=NodeImpl\: id\=\d*\; offset\=\d*\; end\=NodeImpl\: id\=\d*\; offset\=\d*'
 
         for rawAnnotationLine in annotationList:
-            print(rawAnnotationLine)
+            #print(rawAnnotationLine)
             #m = re.search(fullPattern, rawAnnotationLine)
             #print(m)
             #if m:
@@ -218,17 +247,31 @@ class AnnotationSet(GateInterFace):
                 currentAnnotation = Annotation()
                 currentAnnotation.id = int(re.search(idPattern,rawAnnotationLine).group(0))
                 currentAnnotation.type = re.search(typePattern,rawAnnotationLine).group(0)
+                #print(len(re.search(featurePattern,rawAnnotationLine).group(0)))
                 currentAnnotation._setFeatureFromRawLine(re.search(featurePattern,rawAnnotationLine).group(0))
-                print(currentAnnotation.id)
-                print(currentAnnotation.type)
-                print(currentAnnotation.features)
+                #print(currentAnnotation.id)
+                #print(currentAnnotation.type)
+                #print(currentAnnotation.features)
                 currentAnnotation._setStartNode(re.search(startNodePattern,rawAnnotationLine).group(0))
                 currentAnnotation._setEndNode(re.search(endNodePattern,rawAnnotationLine).group(0))
-                print(currentAnnotation.startNode.id, currentAnnotation.startNode.offset)
-                print(currentAnnotation.endNode.id, currentAnnotation.endNode.offset)
+                #print(currentAnnotation.startNode.id, currentAnnotation.startNode.offset)
+                #print(currentAnnotation.endNode.id, currentAnnotation.endNode.offset)
                 self.annotationSet.append(currentAnnotation)
             except:
                print('bad line, ignore') 
+               print(rawAnnotationLine)
+               #currentAnnotation = Annotation()
+               #currentAnnotation.id = int(re.search(idPattern,rawAnnotationLine).group(0))
+               #currentAnnotation.type = re.search(typePattern,rawAnnotationLine).group(0)
+               #currentAnnotation._setFeatureFromRawLine(re.search(featurePattern,rawAnnotationLine).group(0))
+               #print(currentAnnotation.id)
+               #print(currentAnnotation.type)
+               #print(currentAnnotation.features)
+               #currentAnnotation._setStartNode(re.search(startNodePattern,rawAnnotationLine).group(0))
+               #currentAnnotation._setEndNode(re.search(endNodePattern,rawAnnotationLine).group(0))
+               #print(currentAnnotation.startNode.id, currentAnnotation.startNode.offset)
+               #print(currentAnnotation.endNode.id, currentAnnotation.endNode.offset)
+               #self.annotationSet.append(currentAnnotation)
 
 class Annotation:
     def __init__(self):
@@ -239,26 +282,52 @@ class Annotation:
         self.endNode = None
 
 
-    def _setFeatureFromRawLine(self, rawFeatureLine):
-        print(rawFeatureLine)
-        #replace comma in list to |||
-        listPattern = '(?<=\=)\[[\w \,]+\]'
-        listFeatures = re.findall(listPattern, rawFeatureLine)
-        for listFeature in listFeatures:
-            newPattern = re.sub(', ',' ||| ', listFeature)
-            rawFeatureLine = rawFeatureLine.replace(listFeature, newPattern)
-        splittedFeatures = re.split(', ',rawFeatureLine)
-        print(splittedFeatures)
-        for splittedFeature in splittedFeatures:
-            featureTok = splittedFeature.split('=')
-            featureKey = featureTok[0]
-            featureValue = featureTok[1]
-            if self._isListFeature(featureValue):
-                #self.features[featureKey] = []
-                listValues = featureValue[1:-1].split(' ||| ')
-                self.features[featureKey] = listValues
+    def matches(self, compareAnno):
+        startNodeOffsetMatch = self.startNode.offset == compareAnno.startNode.offset
+        endNodeOffsetMatch = self.endNode.offset == compareAnno.endNode.offset
+        if startNodeOffsetMatch and endNodeOffsetMatch:
+            return True
+
+    def overlaps(self, compareAnno):
+        selfStart = self.startNode.offset
+        selfEnd = self.endNode.offset-1
+        compareStart = compareAnno.startNode.offset
+        compareEnd = compareAnno.endNode.offset-1
+        if selfStart <= compareStart:
+            if selfEnd >= compareStart:
+                return True
             else:
-                self.features[featureKey] = featureValue
+                return False
+        elif selfStart >= compareStart:
+            if compareEnd >= selfStart:
+                return True
+            else:
+                return False
+
+
+
+
+    def _setFeatureFromRawLine(self, rawFeatureLine):
+        #print(rawFeatureLine)
+        if len(rawFeatureLine) > 0:
+            #replace comma in list to |||
+            listPattern = '(?<=\=)\[[\w \,]+\]'
+            listFeatures = re.findall(listPattern, rawFeatureLine)
+            for listFeature in listFeatures:
+                newPattern = re.sub(', ',' ||| ', listFeature)
+                rawFeatureLine = rawFeatureLine.replace(listFeature, newPattern)
+            splittedFeatures = re.split(', ',rawFeatureLine)
+            #print(splittedFeatures)
+            for splittedFeature in splittedFeatures:
+                featureTok = splittedFeature.split('=')
+                featureKey = featureTok[0]
+                featureValue = featureTok[1]
+                if self._isListFeature(featureValue):
+                    #self.features[featureKey] = []
+                    listValues = featureValue[1:-1].split(' ||| ')
+                    self.features[featureKey] = listValues
+                else:
+                    self.features[featureKey] = featureValue
 
     def _isListFeature(self, featureValue):
         pattern = '\[.*\]'
@@ -311,7 +380,7 @@ class GateDocument(GateInterFace):
         serverReturn = self._sendDoc2Java('loadDocumentFromURL', documentURL)
         if serverReturn['message'] == 'success':
             self.documentName = documentName
-        print(serverReturn)
+        #print(serverReturn)
 
 
     def loadDocumentFromFile(self, documentPath):
@@ -319,7 +388,7 @@ class GateDocument(GateInterFace):
         serverReturn = self._sendDoc2Java('loadDocumentFromFile', documentPath)
         if serverReturn['message'] == 'success':
             self.documentName = documentName
-        print(serverReturn)
+        #print(serverReturn)
 
     def getDocumentContent(self):
         jsonDict = {}
@@ -362,7 +431,7 @@ class GatePipeline(GateInterFace):
         jsonDict['pipelineName'] = self.pipelineName
         jsonDict['filtPath'] = filePath
         response = self._send2Java(jsonDict)
-        print(response)
+        #print(response)
 
 
 
@@ -371,7 +440,7 @@ class GatePipeline(GateInterFace):
         jsonDict['pipeline'] = 'createPipeline'
         jsonDict['pipelineName'] = self.pipelineName
         response = self._send2Java(jsonDict)
-        print(response)
+        #print(response)
 
 
     def addPR(self, prName):
@@ -380,7 +449,7 @@ class GatePipeline(GateInterFace):
         jsonDict['pipelineName'] = self.pipelineName
         jsonDict['prName'] = prName
         response = self._send2Java(jsonDict)
-        print(response)
+        #print(response)
         self.prList.append(prName)
 
     def setCorpus(self, corpus):
@@ -390,7 +459,7 @@ class GatePipeline(GateInterFace):
         jsonDict['pipelineName'] = self.pipelineName
         jsonDict['corpusName'] = corpusName
         response = self._send2Java(jsonDict)
-        print(response)
+        #print(response)
         self.corpus = corpus
 
     def runPipeline(self):
@@ -398,7 +467,7 @@ class GatePipeline(GateInterFace):
         jsonDict['pipeline'] = 'runPipeline'
         jsonDict['pipelineName'] = self.pipelineName
         response = self._send2Java(jsonDict)
-        print(response)
+        #print(response)
 
 
 
@@ -414,7 +483,7 @@ class GateCorpus(GateInterFace):
         jsonDict['corpus'] = 'createCorpus'
         jsonDict['corpusName'] = self.corpusName
         response = self._send2Java(jsonDict)
-        print(response)
+        #print(response)
 
     def addDocument(self, document):
         documentName = document.documentName
@@ -423,7 +492,7 @@ class GateCorpus(GateInterFace):
         jsonDict['corpusName'] = self.corpusName
         jsonDict['documentName'] = documentName
         response = self._send2Java(jsonDict)
-        print(response)
+        #print(response)
         self.documentList.append(document)
 
 

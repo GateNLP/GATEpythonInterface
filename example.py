@@ -30,8 +30,8 @@ ats = document.getAnnotations('Original markups')
 gate.loadMvnPlugins("uk.ac.gate.plugins", "annie", "8.5")
 
 # load PRs 
-gate.loadPRs('gate.creole.annotdelete.AnnotationDeletePR')
-gate.loadPRs('gate.creole.tokeniser.DefaultTokeniser')
+gate.loadPRs('gate.creole.annotdelete.AnnotationDeletePR', 'anndeletePR')
+gate.loadPRs('gate.creole.tokeniser.DefaultTokeniser', 'defToken')
 
 # set initialise parameter for PR
 #prparameter['grammarURL'] = 'file:////Users/xingyi//Gate/ifpri/JAPE/main.jape'
@@ -42,8 +42,8 @@ testPipeLine = GatePipeline('testpipeline')
 testPipeLine.createPipeline()
 
 # add PRs to the pipeline
-testPipeLine.addPR('gate.creole.annotdelete.AnnotationDeletePR')
-testPipeLine.addPR('gate.creole.tokeniser.DefaultTokeniser')
+testPipeLine.addPR('anndeletePR')
+testPipeLine.addPR('defToken')
 
 
 # create gate corpus

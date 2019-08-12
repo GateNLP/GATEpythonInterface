@@ -43,17 +43,17 @@ public class GateServer {
             PrintWriter out = new PrintWriter(clientSock.getOutputStream(),true);
             try{
             	HashMap<String, String> fullRequest = getPythonRequest(in);
-            	System.out.println(fullRequest);
+            	//System.out.println(fullRequest);
             	
             	HashMap<String, String> returnResponse = gateObject.processRequest(fullRequest);
             	//System.out.println(gateObject.gateDocList);
-            	System.out.println("request received");            	
+            	//System.out.println("request received");            	
             	//toClient = "success, this is a very long sentencen, hahahahaha";
             	//toClient = "success";
             	sendPythonClient(in, out, returnResponse, 256);
             	
             }catch(Exception e){
-            	System.out.println(e.getMessage());
+            	//System.out.println(e.getMessage());
            		toClient = "Fail";
            	}                  
 		}
@@ -67,8 +67,8 @@ public class GateServer {
         do{
     		fromClient = in.readLine();
     		JSONObject clientJson = new JSONObject(fromClient);
-    		System.out.println("readNewRequest");
-    		System.out.println(clientJson);
+    		//System.out.println("readNewRequest");
+    		//System.out.println(clientJson);
     		JSONObject jsonData = clientJson.getJSONObject("fromClient");
     		
     		eov = jsonData.getBoolean("eov");
@@ -87,7 +87,7 @@ public class GateServer {
     			}
     		}    		
     	}while(eov != true);
-        System.out.println("finish recive");
+        //System.out.println("finish recive");
 		return fullPythonRequest;
 	}
 	
@@ -117,7 +117,7 @@ public class GateServer {
 	        	//System.out.print(outJson.toString());
 	        	out.println(outJson.toString());
 	        	fromClient = in.readLine();
-	            System.out.print(fromClient); 
+	            //System.out.print(fromClient); 
 	        	previ = i;
 	        	i += maxSendChar;
 	        	outJson = new JSONObject();
@@ -127,7 +127,7 @@ public class GateServer {
 		outJson.put("eov", true);
 		out.println(outJson.toString());
 		fromClient = in.readLine();
-		System.out.print(fromClient); 
+		//System.out.print(fromClient); 
 	}
 	
 	public void sendPythonClient(BufferedReader in, PrintWriter out, String serverResponseKey, String serverResponseValue,int maxSendChar) throws IOException{
@@ -152,10 +152,10 @@ public class GateServer {
         	}
         	outJson.put(serverResponseKey, partValue);
         	outJson.put("eov", eov);
-        	System.out.print(outJson.toString());
+        	//System.out.print(outJson.toString());
         	out.println(outJson.toString());
         	fromClient = in.readLine();
-            System.out.print(fromClient); 
+            //System.out.print(fromClient); 
         	previ = i;
         	i += maxChar;
     	}while(eov != true);
