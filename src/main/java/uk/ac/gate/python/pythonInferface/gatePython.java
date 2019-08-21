@@ -66,6 +66,20 @@ public class gatePython {
 				returnResponse.put("message", "success");
 			}
 		}
+		if (fullRequest.containsKey("clearDocument")){
+			String currentDocumentName = fullRequest.get("clearDocument");
+			if (gateDocList.containsKey(currentDocumentName)){
+				//returnResponse = "existed document";
+				Document currentDoc = gateDocList.get(currentDocumentName);
+				currentDoc.cleanup();
+				gateDocList.remove(currentDocumentName);
+				returnResponse.put("message", "success");
+			}
+			else{
+				returnResponse.put("message", "no such document");
+			}
+		}
+		
 		
 		///////////////get document content////////////////////
 		if (fullRequest.containsKey("document")){
@@ -208,6 +222,22 @@ public class gatePython {
 				returnResponse.put("corpus", corpusName);
 				returnResponse.put("message", "success");
 			}
+			
+			if (fullRequest.get("corpus").equals("clearCorpus")){
+				String corpusName = fullRequest.get("corpusName");
+				Corpus currentCorpus = gateCorpus.get(corpusName);
+				try {
+				    currentCorpus.cleanup();
+				    gateCorpus.remove(corpusName);				
+     				returnResponse.put("corpus cleared", corpusName);
+	    			returnResponse.put("message", "success");
+			    }
+				catch(Exception e) {
+					returnResponse.put("message", "failed");
+				}
+			}
+			
+			
 			
 		}	
 		

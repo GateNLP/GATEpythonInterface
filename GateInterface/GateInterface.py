@@ -211,14 +211,24 @@ class AnnotationSet(GateInterFace):
         for node in self.annotationSet:
             yield node
 
-    def getType(self, annotationType):
+    def getType(self, annotationType, startidx=None, endidx=None):
         newList = []
         for annotation in self.annotationSet:
             if annotation.type == annotationType:
-                newList.append(annotation)
+                if startidx and endidx:
+                    if annotation.startNode.offset >= startidx and annotation.endNode.offset <= endidx:
+                        newList.append(annotation)
+                else:
+                    newList.append(annotation)
         subSet = AnnotationSet()
         subSet.annotationSet = newList
         return subSet
+
+    def get(self,i):
+        return self.annotationSet[i]
+
+    def append(self, annotation):
+        self.annotationSet.append(annotation)
             
 
     def _getAnnotationFromResponse(self,response):
@@ -305,8 +315,6 @@ class Annotation:
                 return False
 
 
-
-
     def _setFeatureFromRawLine(self, rawFeatureLine):
         #print(rawFeatureLine)
         if len(rawFeatureLine) > 0:
@@ -386,6 +394,7 @@ class GateDocument(GateInterFace):
     def loadDocumentFromFile(self, documentPath):
         documentName = documentPath
         serverReturn = self._sendDoc2Java('loadDocumentFromFile', documentPath)
+        #print(serverReturn)
         if serverReturn['message'] == 'success':
             self.documentName = documentName
         #print(serverReturn)
@@ -412,10 +421,16 @@ class GateDocument(GateInterFace):
         jsonDict['docName'] = self.documentName
         jsonDict['annotationSetName'] = annotationSetName
         currentAnnotationSet = AnnotationSet()
+        #print(jsonDict)
         response = self._send2Java(jsonDict)
         #print(response)
         currentAnnotationSet._getAnnotationFromResponse(response)
         return currentAnnotationSet
+
+    def clearDocument(self):
+        jsonDict = {}
+        jsonDict['clearDocument'] = self.documentName
+        response = self._send2Java(jsonDict)
 
 
 class GatePipeline(GateInterFace):
@@ -484,6 +499,13 @@ class GateCorpus(GateInterFace):
         jsonDict['corpusName'] = self.corpusName
         response = self._send2Java(jsonDict)
         #print(response)
+
+
+    def clearCorpus(self):
+        jsonDict = {}
+        jsonDict['corpus'] = 'clearCorpus'
+        jsonDict['corpusName'] = self.corpusName
+        response = self._send2Java(jsonDict)
 
     def addDocument(self, document):
         documentName = document.documentName
