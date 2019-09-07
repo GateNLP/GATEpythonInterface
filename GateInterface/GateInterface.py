@@ -104,7 +104,8 @@ class GateInterFace:
 
     def _send2Java(self, jsonDict):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect((self.HOST, self.PORT))
+        #print(self.HOST,self.PORT)
+        sock.connect((self.HOST, int(self.PORT)))
         #print(jsonDict)
         for jsonKey in jsonDict:
             #print(jsonKey)
@@ -227,6 +228,14 @@ class AnnotationSet(GateInterFace):
     def get(self,i):
         return self.annotationSet[i]
 
+    def getbyId(self, annoId):
+        returnAnno = None
+        for annotation in self.annotationSet:
+            if annotation.id == annoId:
+                returnAnno = annotation
+                break
+        return returnAnno
+
     def append(self, annotation):
         self.annotationSet.append(annotation)
             
@@ -291,6 +300,14 @@ class Annotation:
         self.startNode = None
         self.endNode = None
 
+
+    def overlap_set(self, compareSet):
+        overlap = False
+        for compare_annotation in compareSet:
+            overlap = self.overlaps(compare_annotation)
+            if overlap:
+                break
+        return overlap
 
     def matches(self, compareAnno):
         startNodeOffsetMatch = self.startNode.offset == compareAnno.startNode.offset
