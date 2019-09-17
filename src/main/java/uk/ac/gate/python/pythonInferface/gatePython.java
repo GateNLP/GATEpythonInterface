@@ -2,8 +2,10 @@ package uk.ac.gate.python.pythonInferface;
 
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 import org.json.JSONObject;
 
@@ -195,9 +197,64 @@ public class gatePython {
 				returnResponse.put("message", "success");	
 			}
 			
+			if (fullRequest.get("pipeline").equals("checkParams")){
+				String pipelineName = fullRequest.get("pipelineName");
+				String prName = fullRequest.get("resourceName");
+				String paramName = fullRequest.get("paramsName");
+				
+				ConditionalSerialAnalyserController currentpipeline = gatePipelines.get(pipelineName);
+				ProcessingResource currentPR = gatePrs.get(prName);
+				Object aaa = currentpipeline.getParameterValue(currentPR, paramName);
+				//FeatureMap aaa = currentPR.getFeatures();
+				//System.out.println("im in server");
+				//System.out.println(aaa);
+				returnResponse.put("message", aaa.toString());	
+			}
 			
-			
-			
+			if (fullRequest.get("pipeline").equals("setParams")){
+				//String pipelineName = fullRequest.get("pipelineName");
+				String prName = fullRequest.get("resourceName");
+				String paramName = fullRequest.get("paramsName");
+				String paramType = fullRequest.get("paramsType");
+				String rawValue = fullRequest.get("paramsValue");
+			    ProcessingResource currentPR = gatePrs.get(prName);
+			    /*
+			    System.out.println(prName);
+			    System.out.println(paramName);
+			    System.out.println(paramType);
+			    System.out.println(rawValue);
+			    */
+				
+				
+				if(paramType.matches("String")){
+					String paramValue = rawValue;
+					currentPR.setParameterValue(paramName, paramValue);				
+				    returnResponse.put("message", "success");
+
+				}
+				else if(paramType.matches("List")) {
+					String[] splitedValie = rawValue.split(",");
+					List<String> paramValue = new ArrayList<String>();
+					for(String current_value : splitedValie) {
+						paramValue.add(current_value);
+					}
+					currentPR.setParameterValue(paramName, paramValue);
+					
+					System.out.println("success");
+				    returnResponse.put("message", "success");
+
+				}
+				else if(paramType.matches("Boolean")){
+					Boolean paramValue = Boolean.parseBoolean(rawValue);
+					currentPR.setParameterValue(paramName, paramValue);				
+				    returnResponse.put("message", "success");
+
+				}
+				else {
+					returnResponse.put("message", "unknown type");
+				}
+				
+			}			
 			
 		}
 		

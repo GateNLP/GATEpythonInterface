@@ -45,6 +45,14 @@ testPipeLine.createPipeline()
 testPipeLine.addPR('anndeletePR')
 testPipeLine.addPR('defToken')
 
+# get params
+print(testPipeLine.checkRunTimeParams('anndeletePR', 'setsToKeep'))
+# set run time params
+testPipeLine.setRunTimeParams('anndeletePR', 'keepOriginalMarkupsAS', 'false', 'Boolean')
+
+testPipeLine.setRunTimeParams('anndeletePR', 'setsToKeep', 'Key,Target', 'List')
+print(testPipeLine.checkRunTimeParams('anndeletePR', 'setsToKeep'))
+
 
 # create gate corpus
 testCorpus = GateCorpus('testCorpus')

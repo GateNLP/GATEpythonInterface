@@ -225,6 +225,21 @@ class AnnotationSet(GateInterFace):
         subSet.annotationSet = newList
         return subSet
 
+
+    def getbyRange(self, startidx=0, endidx=None):
+        newList = []
+        for annotation in self.annotationSet:
+            if annotation.startNode.offset >= startidx:
+                if endidx:
+                    if annotation.endNode.offset <= endidx:
+                        newList.append(annotation)
+                else:
+                    newList.append(annotation)
+        subSet = AnnotationSet()
+        subSet.annotationSet = newList
+        return subSet
+
+
     def get(self,i):
         return self.annotationSet[i]
 
@@ -500,6 +515,28 @@ class GatePipeline(GateInterFace):
         jsonDict['pipelineName'] = self.pipelineName
         response = self._send2Java(jsonDict)
         #print(response)
+
+    def checkRunTimeParams(self, prName, paramName):
+        jsonDict = {}
+        jsonDict['pipeline'] = 'checkParams'
+        jsonDict['pipelineName'] = self.pipelineName
+        jsonDict['resourceName'] = prName
+        jsonDict['paramsName'] = paramName
+        response = self._send2Java(jsonDict)
+        #print(response)
+        return response['message']
+
+    def setRunTimeParams(self, prName, paramName, paramValue, paramType):
+        jsonDict = {}
+        jsonDict['pipeline'] = 'setParams'
+        jsonDict['pipelineName'] = self.pipelineName
+        jsonDict['resourceName'] = prName
+        jsonDict['paramsName'] = paramName
+        jsonDict['paramsValue'] = paramValue
+        jsonDict['paramsType'] = paramType
+        response = self._send2Java(jsonDict)
+
+
 
 
 
