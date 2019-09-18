@@ -277,6 +277,7 @@ class AnnotationSet(GateInterFace):
             #if m:
             #    print('match')
             try:
+            #if 1:
                 #print(rawAnnotationLine)
                 currentAnnotation = Annotation()
                 currentAnnotation.id = int(re.search(idPattern,rawAnnotationLine).group(0))
@@ -292,8 +293,9 @@ class AnnotationSet(GateInterFace):
                 #print(currentAnnotation.endNode.id, currentAnnotation.endNode.offset)
                 self.annotationSet.append(currentAnnotation)
             except:
-               print('bad line, ignore') 
-               print(rawAnnotationLine)
+               #print('bad line, ignore') 
+               #print(rawAnnotationLine)
+               pass
                #currentAnnotation = Annotation()
                #currentAnnotation.id = int(re.search(idPattern,rawAnnotationLine).group(0))
                #currentAnnotation.type = re.search(typePattern,rawAnnotationLine).group(0)
