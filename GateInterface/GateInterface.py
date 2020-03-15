@@ -5,6 +5,8 @@ import os
 import subprocess
 import time
 import signal
+import pathlib
+
 
 class MyEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -30,11 +32,17 @@ class GateInterFace:
         self.logFile = "gpiterface"+str(self.PORT)+".log"
         self.interfaceJavaPath = None
 
-    def init(self, interfaceJavaPath):
-        self.interfaceJavaPath = interfaceJavaPath
+    def init(self, interfaceJavaPath=None):
+        if interfaceJavaPath:
+            self.interfaceJavaPath = interfaceJavaPath
+        else:
+            interfaceJavaPath = pathlib.Path(__file__).parent.absolute()
+            self.interfaceJavaPath = interfaceJavaPath.parent
+
+
         cwd = os.getcwd()
-        runScript = os.path.join(interfaceJavaPath,'run.sh')
-        os.chdir(interfaceJavaPath)
+        runScript = os.path.join(self.interfaceJavaPath,'run.sh')
+        os.chdir(self.interfaceJavaPath)
         
 
         if (os.path.isfile(self.logFile)):
