@@ -25,6 +25,11 @@ public class document {
 		Document doc = Factory.newDocument(inputFile.toURI().toURL());
 		return doc;
 	}
+
+	public static Document createDocumentFromString(String textString) throws IOException, GateException{
+                Document doc = Factory.newDocument(textString);
+                return doc;
+        }
 	
 	
 	public static HashMap<String, String> documentOperations(HashMap<String, String> fullRequest, HashMap<String, Document> gateDocList) throws IOException, GateException{	

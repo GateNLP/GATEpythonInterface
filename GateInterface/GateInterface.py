@@ -6,6 +6,9 @@ import subprocess
 import time
 import signal
 import pathlib
+import random
+import string
+
 
 
 class MyEncoder(json.JSONEncoder):
@@ -47,11 +50,11 @@ class GateInterFace:
 
         if (os.path.isfile(self.logFile)):
             print("logfile existed, try to close previous session")
+            with open(self.logFile,'r') as fin:
+                line = fin.readline().strip()
+                pid = int(line)
             try:
-                with open(self.logFile,'r') as fin:
-                    line = fin.readline().strip()
-                    pid = int(line)
-                    os.killpg(os.getpgid(pid), signal.SIGTERM)
+                os.killpg(os.getpgid(pid), signal.SIGTERM)
             except:
                 print("can not kill process-"+str(pid)+"please close manully")
             
@@ -425,6 +428,15 @@ class GateDocument(GateInterFace):
         GateInterFace.__init__(self)
         self.documentName = None
 
+
+    def get_doc_name(self, prefix):
+        length = 64
+        letters = string.ascii_lowercase
+        result_str = ''.join(random.choice(letters) for i in range(length))
+        #print("Random string of length", length, "is:", result_str)
+        return prefix+result_str
+
+
     def loadDocumentFromURL(self, documentURL):
         documentName = documentURL
         serverReturn = self._sendDoc2Java('loadDocumentFromURL', documentURL)
@@ -440,6 +452,19 @@ class GateDocument(GateInterFace):
         if serverReturn['message'] == 'success':
             self.documentName = documentName
         #print(serverReturn)
+
+
+    def createDocumentFromString(self, docText):
+        documentName = self.get_doc_name(docText[:10])
+        jsonDict={}
+        jsonDict['createDocumentFromString'] = docText
+        jsonDict['documentName'] = documentName
+        serverReturn = self._send2Java(jsonDict)
+        #print(serverReturn)
+        if serverReturn['message'] == 'success':
+            self.documentName = documentName
+
+
 
     def getDocumentContent(self):
         jsonDict = {}

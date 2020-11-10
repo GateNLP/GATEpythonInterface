@@ -68,6 +68,25 @@ public class gatePython {
 				returnResponse.put("message", "success");
 			}
 		}
+
+
+		if (fullRequest.containsKey("createDocumentFromString")){
+			String currentDocumentName = fullRequest.get("documentName");
+                        String currentDocumentText = fullRequest.get("createDocumentFromString");
+                        if (gateDocList.containsKey(currentDocumentName)){
+                                //returnResponse = "existed document";
+                                returnResponse.put("message", "existed document");
+                        }
+                        else{
+                                Document gateDoc = document.createDocumentFromString(currentDocumentText);
+                                //System.out.println(gateDoc.getAnnotationSetNames());
+                                gateDocList.put(currentDocumentName, gateDoc);
+                                //returnResponse ="success";
+                                returnResponse.put("message", "success");
+                        }
+                }
+
+
 		if (fullRequest.containsKey("clearDocument")){
 			String currentDocumentName = fullRequest.get("clearDocument");
 			if (gateDocList.containsKey(currentDocumentName)){
